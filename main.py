@@ -1,21 +1,19 @@
+import requests
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
-import yfinance as yf
-import requests
-
 app = FastAPI()
-session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-})
+API_KEY = "iPeKJCDdwxRKF69EKfKoL1EI24kP4mYK"
 
 @app.get("/price/{symbol}", response_class=PlainTextResponse)
 def get_stock_price(symbol: str):
     try:
-        ticker = yf.Ticker(f"{symbol.upper()}.NS", session=session)        
-        current_data = ticker.history(period="1d")        
-        if current_data.empty:
-            return "0"
-        return str(round(current_data.iloc[-1]['Close'], 2))
+        ticker_symbol = f"{symbol.upper()}.NS"
+        url = f"https://financialmodelingprep.com/api/v3/quote-short/{ticker_symbol}?apikey={API_KEY}"
+        response = requests.get(url)
+        data = response.json()
+        if data and len(data) > 0:
+            price = data[0]['price']
+            return str(round(price, 2))
+        return "0"
     except Exception as e:
         return f"Error: {str(e)}"
